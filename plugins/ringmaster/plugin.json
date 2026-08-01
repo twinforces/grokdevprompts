@@ -1,0 +1,9 @@
+{
+  "name": "ringmaster",
+  "version": "0.1.0",
+  "description": "Ringmaster pack for Grok Build: bootstrap, hygiene, and four-role activation with self-contained references (no Obsidian required).",
+  "author": {
+    "name": "Pierce"
+  },
+  "keywords": ["ringmaster", "hygiene", "bootstrap", "architect", "implementer", "reviewer", "tester"]
+}
