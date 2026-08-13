@@ -7,7 +7,7 @@ Long-term history. What / Why / How + git hash. Successes and failures.
 - **What:** Replaced the 2x / 10-minute cap with instant / coffee (15m) / lunch-overnight (1h). Phase follows elapsed wall time. Prompt: if you know it is hours, first wait is 1h.
 - **Why:** Multi-hour and overnight jobs were still getting a wake every 10 minutes. Human interest is coffee / lunch / morning, not a 10-minute metronome.
 - **How:** `next_interval()` uses started_ms + elapsed. Cap is `LUNCH_MS` (1h). Playbooks, master prompt, coding-bootstrap, and `docs/brochure.md` (X-ready) updated to match.
-- **Hash:** pending this change
+- **Hash:** `c496008`
 
 ## 2026-08-13 — wait-credit-guard (plugin 0.2.0)
 
