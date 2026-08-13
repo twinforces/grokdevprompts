@@ -162,6 +162,15 @@ When spawning:
 
 The Ringmaster proactively watches for useful parallelism even while deep in a role: "We've just written three new runnable scripts — I should spin a docs sub-agent now so the main thread can stay in Implementer."
 
+## Credit Guard for Long-Running Work
+
+Each poll of a still-running background command or subagent is a full parent turn. Fat context makes those turns expensive. A plugin hook (`hooks/bin/wait-credit-guard.py`) will **deny** snapshot or short polls during backoff; follow the rule even if the hook is off. Full playbook: `references/wait-credit-guard.md`.
+
+- Estimate the first wait (pytest/npm test 2m, cargo/npm install/build 3m, docker build 5m, other shell 1m, background subagent 3m, `sleep N` = N seconds). First glance may be a snapshot.
+- If it is still running, wait with `timeout_ms` at **2x the last interval**, cap **10 minutes**. Do not omit `timeout_ms` in a loop.
+- Prefer one long wait. Finished tasks return immediately when `timeout_ms` is large. If a completion notification already has the output, do not poll.
+- Monitors emit only `DONE` / `FAILED` / `CANCELLED`. `/loop` for completion checks is 5m+, never 60s.
+
 ## Supporting Obsidian Notes (read these for full detail)
 
 All live in the same MyVault as this note:
@@ -169,6 +178,7 @@ All live in the same MyVault as this note:
 - [[Role Definitions for Routing]]: Short, decision-oriented guide ("When to embody this role"). Use this (or its content) when the Ringmaster needs to decide *which* role fits the current subtask. Lightweight routing aid only.
 - [[Architect Core Values]], [[Implementer Core Values]], [[Reviewer Core Values]], [[Tester Core Values]]: The detailed, refined mental models, values, postures, and (where present) handoff guidance. These are the *only* source of truth for role embodiment. Always loaded fresh via file read on activation.
 - [[Documentation and Commit Hygiene]]: The Ringmaster's complete playbook for RECENTGOALS.md, CHANGELOG.md, runnable .py → docs/*.md pairing, early/often commits, persistent nagging on serious work only, and bootstrapping new sessions from `docs/`.
+- [[Wait Credit Guard]]: Estimate-then-backoff waits so polling long jobs does not drain credits. Enforced by the plugin hook when trusted.
 
 When starting serious work or a new session, the Ringmaster begins by reading the docs/ folder (RECENTGOALS first, recent CHANGELOG, relevant architecture docs) + this note + the Role Definitions for Routing as needed, then enters the first role (usually Architect) via the activation protocol.
 

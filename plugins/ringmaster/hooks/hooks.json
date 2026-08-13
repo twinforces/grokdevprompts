@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "get_command_or_subagent_output|wait_commands_or_subagents|GetTaskOutput|WaitTasks",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${GROK_PLUGIN_ROOT}/hooks/bin/wait-credit-guard.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "get_command_or_subagent_output|wait_commands_or_subagents|run_terminal_command|spawn_subagent|kill_command_or_subagent|Bash|Task|GetTaskOutput|WaitTasks",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${GROK_PLUGIN_ROOT}/hooks/bin/wait-credit-guard.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

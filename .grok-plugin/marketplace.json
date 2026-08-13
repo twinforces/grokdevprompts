@@ -7,9 +7,9 @@
   "plugins": [
     {
       "name": "ringmaster",
-      "description": "Ringmaster orchestration: bootstrap prompt, hygiene checkpoints, Architect/Implementer/Reviewer/Tester activation from vendored playbooks.",
+      "description": "Ringmaster orchestration: bootstrap prompt, hygiene checkpoints, Architect/Implementer/Reviewer/Tester activation, and credit-guard backoff for long-running waits.",
       "category": "productivity",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": ["ringmaster", "hygiene", "roles", "tui", "subagents"],
       "source": {
         "type": "local",

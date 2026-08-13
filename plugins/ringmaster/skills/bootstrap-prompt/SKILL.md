@@ -49,6 +49,7 @@ Prefer, in order:
 
 - `/hygiene` — project documentation and commit hygiene checkpoint
 - `/activate-role` — switch role with full Core Values read from pack references
+- Long-running waits: follow `references/wait-credit-guard.md` (estimate, then geometric backoff). A trusted hook denies tight polls.
 
 ## Do not
 

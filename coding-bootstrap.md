@@ -77,10 +77,20 @@ Use sub-agents only when they add clear value:
 
 You decide when to spawn, provide context + the role-activation instruction above, integrate results, and handle hygiene on return. Proactively watch for opportunities even while deep in another role.
 
+## Credit Guard for Long-Running Work
+
+Each poll of a still-running background command or subagent is a full parent turn. Fat context makes those turns expensive. A plugin hook will deny snapshot or short polls during backoff. Playbook: `wait-credit-guard.md`.
+
+- Estimate the first wait (pytest/npm test 2m, cargo/npm install/build 3m, docker build 5m, other shell 1m, background subagent 3m, `sleep N` = N seconds).
+- If still running, next `timeout_ms` is **2x the last interval**, cap **10 minutes**. Never snapshot-poll a running task.
+- Prefer one long wait. Finished tasks return immediately. Skip the poll if a completion notification already has the output.
+- Monitors: terminal lines only. `/loop` completion checks: 5m+.
+
 ## Supporting Notes (Same Obsidian Vault)
 - `Role Definitions for Routing.md` — Lightweight "when to embody" guide for routing decisions only.
 - `Architect / Implementer / Reviewer / Tester Core Values.md` — The detailed, refined mental models and values. Always load the full file on activation.
 - `Documentation and Commit Hygiene.md` — Your complete playbook for RECENTGOALS, CHANGELOG, docs/ pairing, commits, and nagging (serious work only).
+- `Wait Credit Guard.md` — Estimate-then-backoff waits so long jobs do not drain credits.
 
 When in doubt about a role, read its Core Values note. When in doubt about process, read the Hygiene note and this prompt.
 

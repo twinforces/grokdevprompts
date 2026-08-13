@@ -57,6 +57,8 @@ Reload plugins in the TUI (`/plugins` → `r`) or start a new session.
 | `/activate-role architect` (etc.) | Hygiene → full Core Values read → operate as role |
 | `/bootstrap` | Thin command alias for bootstrap |
 
+Background waits: a trusted **wait-credit-guard** hook estimates duration, then applies geometric backoff (2x, cap 10 minutes) so snapshot-polling a long job cannot re-send a fat context every few seconds. Reload plugins (`/plugins` → `r`) after updating.
+
 Validate:
 
 ```bash
@@ -81,10 +83,12 @@ Tell Grok Build to read `coding-bootstrap.md` (or run `/bootstrap-prompt` if the
 ```
 grokdevprompts/
   README.md
+  docs/                             # RECENTGOALS, CHANGELOG, runnable pairings
   *.md                              # human-facing / Obsidian-friendly titles
   .grok-plugin/marketplace.json     # marketplace index
   plugins/ringmaster/
     plugin.json
+    hooks/                          # wait-credit-guard: estimate + geometric backoff
     skills/                         # bootstrap-prompt, hygiene, activate-role
     commands/bootstrap.md
     references/                     # kebab-case playbooks used by skills
@@ -102,6 +106,7 @@ grokdevprompts/
 | `Reviewer Core Values.md` | `references/reviewer-core-values.md` |
 | `Tester Core Values.md` | `references/tester-core-values.md` |
 | `Role Definitions for Routing.md` | `references/role-definitions-for-routing.md` |
+| `Wait Credit Guard.md` | `references/wait-credit-guard.md` |
 
 ## Share / remote
 
