@@ -7,7 +7,7 @@ Long-term history. What / Why / How + git hash. Successes and failures.
 - **What:** `docs/brochure.md` now sells Ringmaster (roles, hygiene, subagent policy, credit guard). Playbooks and skills point at this pack only.
 - **Why:** The bill is the hook. The product is the circus boss. Old external-note wording was leftover.
 - **How:** README is plugin-only install. Master prompt / skills / role routing use pack `references/`. Plain filenames, not wiki links.
-- **Hash:** pending this change
+- **Hash:** `5964fc7`
 
 ## 2026-08-13 — wait-credit-guard human rungs (plugin 0.2.1)
 
