@@ -5,7 +5,7 @@ description: Load the Ringmaster master prompt and treat it as session operating
 
 # Bootstrap Prompt (Ringmaster pack)
 
-Load the vendored Ringmaster master prompt and follow it for the rest of the session. **No Obsidian required.**
+Load the vendored Ringmaster master prompt and follow it for the rest of the session.
 
 ## Note location (self-contained)
 
@@ -53,5 +53,4 @@ Prefer, in order:
 
 ## Do not
 
-- Fall back to Obsidian paths unless the user explicitly wants vault sync.
 - Silently use a different master prompt without saying so.

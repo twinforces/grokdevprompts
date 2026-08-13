@@ -17,9 +17,7 @@ Grok's coding is mediocre out of the box. "Expert coder" tends toward overengine
 
 It also pushes **project hygiene** (RECENTGOALS, CHANGELOG, docs pairing, early commits) so long sessions stay continuous.
 
-## Two ways to use this repo
-
-### 1. Grok plugin (recommended — no Obsidian)
+## Install (Grok plugin)
 
 Installable pack under `plugins/ringmaster/`. Skills read vendored playbooks from `plugins/ringmaster/references/`.
 
@@ -66,25 +64,13 @@ cd ~/Development/grokdevprompts
 grok plugin validate plugins/ringmaster
 ```
 
-### 2. Classic (copy into Obsidian / vault)
-
-Root-level markdown notes for hand-copy or vault sync:
-
-- `Master Prompt2 - TUI + Subagents (WIP).md`
-- `coding-bootstrap.md`
-- `Documentation and Commit Hygiene.md`
-- `Architect Core Values.md` / `Implementer Core Values.md` / `Reviewer Core Values.md` / `Tester Core Values.md`
-- `Role Definitions for Routing.md`
-
-Tell Grok Build to read `coding-bootstrap.md` (or run `/bootstrap-prompt` if the plugin is installed).
-
 ## Layout
 
 ```
 grokdevprompts/
   README.md
   docs/                             # RECENTGOALS, CHANGELOG, runnable pairings
-  *.md                              # human-facing / Obsidian-friendly titles
+  *.md                              # human-facing titles (kept in sync with plugin references)
   .grok-plugin/marketplace.json     # marketplace index
   plugins/ringmaster/
     plugin.json
@@ -94,7 +80,7 @@ grokdevprompts/
     references/                     # kebab-case playbooks used by skills
 ```
 
-**Source of truth for the plugin install** is `plugins/ringmaster/`. Root `*.md` files are the same content with readable titles for browsing and Obsidian; keep them aligned when you edit playbooks.
+**Source of truth for the plugin install** is `plugins/ringmaster/`. Root `*.md` files are the same content with readable titles for browsing; keep them aligned when you edit playbooks.
 
 | Root note | Plugin reference |
 |---|---|

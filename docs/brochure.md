@@ -1,16 +1,18 @@
-# Stop paying full context to ask "still running?"
+# Ringmaster: make Grok code like a senior, and stop paying full context to ask "still running?"
 
-**wait-credit-guard** is in Ringmaster 0.2.1. It keeps Grok from burning your credits on long jobs.
+**Ringmaster** is a Grok Build plugin for serious coding. Four roles with real cognitive values. Hygiene so a long session is still a project when you come back. A hook that waits like a human instead of lighting the meter on fire.
 
-By [@GrumpyTechBro](https://x.com/GrumpyTechBro) · [twinforces/grokdevprompts](https://github.com/twinforces/grokdevprompts)
+The credit bill is how most people notice it. The pack is why they keep it.
+
+By [@GrumpyTechBro](https://x.com/GrumpyTechBro) · [twinforces/grokdevprompts](https://github.com/twinforces/grokdevprompts) · plugin **v0.2.1**
 
 ---
 
-## The bill you did not notice
+## The bill you did not notice (the hook)
 
-You background a test suite. Or a Docker build. Or a subagent. Grok is supposed to wait.
+You background a test suite. Or a Docker build. Or a training run. Grok is supposed to wait.
 
-What it actually does, once the session is fat, is worse:
+What it actually does, once the session is fat:
 
 1. Call `get_command_or_subagent_output`.
 2. Hear "still running."
@@ -18,15 +20,11 @@ What it actually does, once the session is fat, is worse:
 4. Re-send the **entire conversation** to find that out.
 5. Do it again in 30 seconds. That is the tool default.
 
-Turn 2 of a session, that poll is cheap. Turn 40, with a novel of tool output in context, each "just checking" costs real money. A twenty-minute job at 30s polls is forty full-context wakes. The completion notification was almost free. The poll loop is what ate the budget.
+Turn 2, that poll is cheap. Turn 40, with a novel of tool output in context, each "just checking" costs real money. A twenty-minute job at 30s polls is forty full-context wakes. A job that runs overnight at a 10-minute cap is still dozens of novel-length asks for "not yet."
 
 This is not a model-quality problem. It is a harness habit. Agents hate sitting still. They snapshot-poll. Advice in the system prompt does not survive time pressure.
 
-## What we shipped
-
-**Wait like a human. Enforce it with a hook, not a suggestion.**
-
-People do not check a long job every 10 minutes. They check at:
+**wait-credit-guard** is the piece that says no. Wait like a person:
 
 | Rung | Meaning | Wait |
 |---|---|---|
@@ -34,22 +32,136 @@ People do not check a long job every 10 minutes. They check at:
 | **Coffee** | You would go get coffee | 15 min |
 | **Lunch / overnight** | Hours. Morning is soon enough. | 1 hour |
 
-If you already know it is an overnight training run, start at lunch. Do not open with a 1-minute guess.
+If you already know it is overnight, start at lunch. The hook follows **elapsed wall time**, not a 2× ladder that caps at 10 minutes. A snapshot poll of a known-running task is **denied**. Finished work returns immediately even on a 1h wait.
 
-If you are unsure, start at the instant estimate (`pytest` 2m, cargo/npm 3m, docker 5m, other shell 1m, subagent 3m). The hook watches **elapsed wall time** and walks you up: after a couple of minutes you are on coffee, after about 20 minutes you are on hourly, and you stay there until morning.
+Prompt-only was tried. Agents ignored it. The hook is why the meter stops spinning.
 
-A snapshot poll of a task we already know is running gets **denied**. Finished work returns immediately even when `timeout_ms` is an hour.
+That is a good reason to install the plugin. It is a bad reason to stop reading.
 
-Prompt-only was tried. Agents ignored it. A 10-minute cap was tried too. That still wakes a fat session all night. The hook is the product.
+---
 
-## What you do not lose
+## The actual problem
 
-- First glance is still free. You can see whether it already finished.
-- Kill / fail / complete drops the backoff. You are not locked out of the result.
-- Hook crash fails open. A broken script never bricks the tool.
-- If you have real other work, do that. Do not invent "check again" turns.
+Grok's coding is mediocre out of the box. "Expert coder" tends toward overengineered sludge: extra abstractions, no *why*, a session that cannot be resumed by tired-you tomorrow.
 
-Monitors still exist. They should emit `DONE` / `FAILED` / `CANCELLED`, not progress spam. `/loop` for overnight "is it done yet" is 1 hour, not 60 seconds.
+A long TUI session makes it worse. Context gets huge. Roles blur. Commits get skipped. Docs never happen. Subagents get spawned because parallelism feels like progress. Background jobs get polled because sitting still feels like slacking.
+
+You do not need a smarter autocomplete. You need a **circus boss**: one main agent that stays in the driver's seat, puts on the right hat, writes the history, and does not set money on fire while cargo thinks.
+
+That is Ringmaster.
+
+---
+
+## What Ringmaster is
+
+A self-contained Grok Build plugin. Playbooks live in the pack.
+
+| Piece | Job |
+|---|---|
+| **Master prompt** | Session OS. You are the Ringmaster of the coding circus. |
+| **Four Core Values notes** | Architect, Implementer, Reviewer, Tester. Loaded in full on every role entry. No condensed cheat sheet to rot. |
+| **Hygiene playbook** | `docs/RECENTGOALS.md`, `CHANGELOG.md`, runnable code paired with Why-first docs, early commits. |
+| **Skills** | `/bootstrap-prompt`, `/hygiene`, `/activate-role`. |
+| **wait-credit-guard hook** | Human-scale waits. Trusted plugin. Deny, not a sermon. |
+
+Philosophy, in one pass:
+
+- The **main agent** does most of the work. Role switching inside one head is the default.
+- **Subagents** are a power tool (true parallelism, isolation, background docs), not the architecture.
+- **Code is a river.** Everything is optimized for future-you coming back under imperfect conditions: tired, stressed, 3am, one too many margaritas.
+- Serious work follows the flow. Throwaways can skip it. The Ringmaster decides.
+
+---
+
+## Four hats, actually different brains
+
+Default flow for serious work:
+
+**Architect → Implementer ↔ Reviewer → Tester**
+
+| Role | You put this hat on when | The brain |
+|---|---|---|
+| **Architect** | You do not understand the system yet, or the shape is wrong | Mental model of the *system* (people, tooling, evolvability), not the next function |
+| **Implementer** | It is time to write or change code | 3am Saturday CEO on the phone. Clarity over clever. DRY because copying copies bugs. Explain *why*. Do not fear refactor. |
+| **Reviewer** | A slice is reviewable | The best way to teach a junior is during review. Code that smells always breaks. Send work back. |
+| **Tester** | It looks done | Implementing is not testing. Deliberate pessimist. Edge cases, failure modes, how it will actually be validated. |
+
+Activation is a protocol, not a vibe:
+
+1. Say the role and why.
+2. Hygiene checkpoint (the Ringmaster never drops this).
+3. **Read the full Core Values file.** Every entry and re-entry. No memory of last time.
+4. Operate as that role until the next explicit switch.
+
+Roles have agency. They can hand off ("this is reviewable," "we need the Architect"). The Ringmaster still owns coordination and hygiene. That hybrid is the point: hats are real, the circus does not run itself.
+
+Quick experiment? Skip hats. Serious work? Do not let the model stay in "helpful intern who types a lot."
+
+---
+
+## Hygiene is not optional on serious work
+
+Long sessions die when the only history is the scrollback.
+
+Ringmaster owns:
+
+- **`docs/RECENTGOALS.md`** — short scratchpad. What / Why / How + hash.
+- **`docs/CHANGELOG.md`** — durable history, including what did *not* work.
+- **Docs pairing** — a new runnable file gets a Why-first `docs/*.md`. What the code does is in the code. Why it exists is the part that survives.
+- **Early commits** — after a meaningful slice, not after the novel.
+- **Nagging** — on serious work only. Throwaway spikes are left alone.
+
+Hygiene runs at every role transition, which is exactly when it is easiest to skip. Bootstrapping a new session starts by reading `docs/`, not by guessing.
+
+This is how "code is a river" stays true when you close the laptop.
+
+---
+
+## Subagents, used like a grown-up
+
+Default: stay in one agent and switch hats.
+
+Spawn a child when it adds clear value:
+
+- Background docs while you keep implementing.
+- Two independent reviews on different modules.
+- Isolation for a risky refactor.
+- Persistent watch during a long operation (tight filters; terminal events only).
+
+Do not spawn because the prompt said "use subagents." Depth is one. The Ringmaster integrates results and still owns hygiene.
+
+---
+
+## The credit guard, in that world
+
+Once you are actually doing serious work, sessions get long. That is when the poll loop becomes a tax on the whole pack: every "still running?" re-sends the Architect plan, the review comments, the test dump.
+
+So the same plugin that makes Grok wear the right hat also:
+
+- Estimates the first wait from the command (or takes 1h if *you* know it is overnight).
+- Steps **instant → coffee (15m) → lunch/overnight (1h)** by elapsed time.
+- Denies snapshot and short polls while the task is running.
+- Drops state on complete / fail / kill. First glance is free. Hook crash fails open.
+
+Monitors emit `DONE` / `FAILED` / `CANCELLED`, not progress. Overnight `/loop` is 1h, not 60s.
+
+The guard protects the budget so the rest of Ringmaster can afford to exist.
+
+---
+
+## How you actually use it
+
+| Invoke | What happens |
+|---|---|
+| `/bootstrap-prompt` or `/bootstrap` | Load the master prompt as session OS |
+| `/hygiene` | RECENTGOALS / CHANGELOG / docs pairing / commit checkpoint |
+| `/activate-role architect` (etc.) | Hygiene, then full Core Values read, then operate as that role |
+
+Then work. The Ringmaster should declare hat changes out loud. You can force a switch. You can say "hygiene" when the river is getting muddy.
+
+Confirm the pack loaded: `grok plugin details ringmaster` should show **v0.2.1** and **hooks**.
+
+---
 
 ## Install
 
@@ -65,98 +177,121 @@ Already have it?
 grok plugin update ringmaster
 ```
 
-Then `/plugins` → `r`, or a new session. Hooks stay inert until the plugin is trusted. Confirm with `grok plugin details ringmaster` (want **v0.2.1** and **hooks**).
+Then `/plugins` → `r`, or a new session. **Trust matters:** skills load when the plugin is enabled; hooks stay inert until trusted (`--trust`, or a copy under `~/.grok/plugins/`).
 
-In-session: `/bootstrap-prompt` loads the Ringmaster OS, including this rule.
+Symlink if you want the checkout to be the live plugin:
+
+```bash
+ln -sfn ~/Development/grokdevprompts/plugins/ringmaster ~/.grok/plugins/ringmaster
+```
+
+In-session: `/bootstrap-prompt`. That is the OS. The hook runs whether or not you remember the wait rules.
 
 ---
 
 ## Paste this on X
 
-Single post (edit the link if you want a screenshot under it):
+**Pack post** (this is the one to pin if you only post once):
+
+```
+Grok out of the box writes like an intern with a compiler.
+
+Ringmaster is the circus boss I actually use:
+
+• four hats (Architect / Implementer / Reviewer / Tester) with real Core Values, re-read every switch
+• hygiene so a long session is still a project tomorrow
+• subagents as a power tool, not the architecture
+• wait-credit-guard: wait like a human (instant / coffee / lunch / overnight). "Still running?" every 30s is a full-context bill
+
+Code is a river. Optimize for 3am-you.
+
+github.com/twinforces/grokdevprompts
+```
+
+**Bill hook** (if you want the spicy opener, then reply with the pack post):
 
 ```
 Grok will light your credits on fire waiting for a long job.
 
 Every "still running?" is a full parent turn. The whole chat goes back over the wire. Do that every 30s on a fat session and you are paying novel-length context to learn nothing.
 
-Ringmaster 0.2.1 has wait-credit-guard:
-
-• wait like a human: instant, coffee (15m), lunch/overnight (1h)
-• if you know it is hours, start at 1h
-• snapshot polls of a running task are denied
-
-Prompt advice was not enough. The hook says no.
+That's the hook. The product is Ringmaster: senior roles, hygiene, and a hook that waits like a human (instant / coffee 15m / overnight 1h).
 
 github.com/twinforces/grokdevprompts
 ```
 
-Thread if you want more room:
+**Thread** (pack first, bill as the turn that makes people install):
 
-**1/7**
-Grok has a quiet way to drain a coding session: it polls background work like a toddler on a road trip.
+**1/8**
+Grok's default coding is mediocre in a specific way: overengineered sludge, no *why*, a session you cannot resume tomorrow.
 
-"Still running?"
-"Still running?"
-"Still running?"
+I got tired of re-explaining "be a senior." So I packaged the circus boss.
 
-Each ask is not a cheap peek. It is another full turn.
+**2/8**
+Ringmaster is a Grok Build plugin.
 
-**2/7**
-`get_command_or_subagent_output` comes back "still running" and the harness wakes the parent model.
+One main agent. Four hats. Hygiene. A hook that stops the meter from spinning on long jobs.
 
-That wake re-sends the entire conversation.
+Subagents are a power tool, not the org chart. The Ringmaster stays in the driver's seat.
 
-Early in a session: whatever.
-Hour two, after reviews and test dumps: you just paid for War and Peace to hear "not yet."
+**3/8**
+Hats, for serious work:
 
-**3/7**
-Default wait is 30 seconds. A 20 minute Docker build is ~40 of those wakes.
+Architect: understand the system (not the next function)
+Implementer: 3am Saturday, CEO on the phone, write code tired-you can touch
+Reviewer: code that smells breaks; send it back
+Tester: implementing is not testing
 
-The completion ping was fine. The loop is the bug. Agents do it because sitting still feels like slacking, and a system-prompt footnote loses to that instinct.
+Every switch: say it, do hygiene, re-read the full Core Values file. No rotting summary.
 
-**4/7**
-Ringmaster 0.2.1 ships wait-credit-guard.
+**4/8**
+"Code is a river." You are always stepping back in.
 
-Wait like a human: instant, cup of coffee (15m), lunch/overnight (1h).
-If you know it is hours, the first wait is already 1h.
-Omit timeout on a known-running task and the hook denies the call.
+RECENTGOALS + CHANGELOG (including what failed). Why-first docs next to runnable files. Commits after a slice, not after the novel.
 
-**5/7**
-A 10-minute cap still wakes you all night. Overnight, hourly is enough.
+Hygiene at every hat change, because that is when you skip it.
 
-The hook follows elapsed wall time. A job that has already been running for three hours skips the toddler rungs and goes hourly.
+**5/8**
+The install-now hook is the credit bill.
 
-Finished work returns immediately even with a 1h timeout. You are not punished for a job that ends early.
+Every "still running?" is another full parent turn. Fat context. 30s default. A 20 minute build is ~40 wakes. Overnight at a 10-minute cap is still you paying War and Peace for "not yet."
 
-**6/7**
-We tried telling the model. It still snapshot-polled.
+**6/8**
+wait-credit-guard waits like a person:
 
-So this is a trusted plugin hook, not a sermon. Crash fails open. First glance is allowed. Kill/complete clears state.
+instant (estimate)
+coffee (15m)
+lunch / overnight (1h)
 
-**7/7**
-Ringmaster is the rest of the pack too: Architect / Implementer / Reviewer / Tester, hygiene, bootstrap. This is the piece that stops the meter from spinning while cargo thinks.
+Know it is hours? Start at 1h. Hook follows elapsed time. Snapshot polls get denied. Finished work returns immediately.
 
-github.com/twinforces/grokdevprompts
+Prompt advice was not enough. The hook says no.
 
+**7/8**
+That guard exists so the rest of the pack can afford a long session. Roles and hygiene are the product. The bill is how you notice.
+
+**8/8**
 ```
 grok plugin marketplace add twinforces/grokdevprompts
 grok plugin install ringmaster --trust
 grok plugin enable ringmaster
 ```
 
-Then `/plugins` → r. Look for v0.2.1 + hooks.
+`/plugins` → r. Look for v0.2.1 + hooks.
+`/bootstrap-prompt` loads the OS.
+
+github.com/twinforces/grokdevprompts
+
+I'm @GrumpyTechBro. Issues and insults both welcome.
 
 ---
 
-Shorter alt if you only want one punch:
+Shorter alt:
 
 ```
-New in Ringmaster: wait-credit-guard.
+Ringmaster: make Grok wear the right hat, write the history, and stop asking "still running?" every 30s on a fat context.
 
-Grok was paying full-context rates to ask "still running?" every 30s. That's how long jobs eat a SuperGrok allotment.
-
-Now: instant / coffee / lunch / overnight (hourly). Tight polls get denied.
+Four roles. Hygiene. Human-scale waits (instant / coffee / overnight).
 
 github.com/twinforces/grokdevprompts
 ```

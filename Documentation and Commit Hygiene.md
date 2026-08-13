@@ -41,7 +41,7 @@ Role switches are high-leverage moments. The Ringmaster (main agent) performs a 
 - Consider an early commit before or immediately after the handoff.
 - Ensure any new runnable files touched in the prior role have their `docs/*.md` draft started or updated.
 - Surface nagging items if the volume of work warrants it.
-The active role may flag observations; the Ringmaster owns execution. See the activation protocol in [[Master Prompt2 - TUI + Subagents (WIP)]] for the exact sequence (declaration → hygiene → full Core Values file read → operate).
+The active role may flag observations; the Ringmaster owns execution. See the activation protocol in `Master Prompt2 - TUI + Subagents (WIP).md` for the exact sequence (declaration → hygiene → full Core Values file read → operate).
 
 ### 8. Bootstrapping New Tasks / Sessions
 - When starting a new task or session, read the contents of the `docs/` folder (especially RECENTGOALS.md and recent sections of CHANGELOG.md).

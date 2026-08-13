@@ -6,7 +6,7 @@ argument-hint: "[architect|implementer|reviewer|tester] [reason]"
 
 # Activate Role (Ringmaster pack)
 
-Switch the main agent into a coding role using the **full file-read** protocol. Core Values are vendored in this plugin (no Obsidian).
+Switch the main agent into a coding role using the **full file-read** protocol. Core Values are vendored in this plugin.
 
 ## Role → reference file
 
@@ -45,4 +45,3 @@ Resolve plugin root via `${GROK_PLUGIN_ROOT}` or `../../references/` from this s
 
 - Use condensed/inlined role summaries instead of reading the file.
 - Skip hygiene at serious-work transitions.
-- Load Obsidian vault paths unless the user asks for vault override.

@@ -5,7 +5,7 @@ description: Run Ringmaster project hygiene — RECENTGOALS/CHANGELOG, docs pair
 
 # Project Hygiene (Ringmaster pack)
 
-Execute the Ringmaster project hygiene playbook. **No Obsidian required** — the playbook is vendored in this plugin.
+Execute the Ringmaster project hygiene playbook. The playbook is vendored in this plugin.
 
 ## Playbook location
 

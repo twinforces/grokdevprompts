@@ -2,14 +2,14 @@
 
 These short definitions are intended to help the main agent (Ringmaster) decide *which role to activate* at any given moment. They are deliberately lightweight and decision-oriented.
 
-Once the Ringmaster chooses a role, it activates that role by **reading the full corresponding Core Values note** (e.g. `Implementer Core Values.md`) using its file tools, per the integrated protocol in [[Master Prompt2 - TUI + Subagents (WIP)]]. The depth, mental models, postures, and handoff guidance live in those notes — not here. These definitions exist only to make the routing choice reliable and fast.
+Once the Ringmaster chooses a role, it activates that role by **reading the full corresponding Core Values note** (e.g. `Implementer Core Values.md`) using its file tools, per the integrated protocol in `Master Prompt2 - TUI + Subagents (WIP).md`. The depth, mental models, postures, and handoff guidance live in those notes — not here. These definitions exist only to make the routing choice reliable and fast.
 
 ---
 
 ## Relationship to Role Activation
 - This note answers "Which role fits the current subtask?"
 - The Core Values notes answer "What does it mean to *be* that role right now?"
-- The Ringmaster always performs a hygiene checkpoint (see [[Documentation and Commit Hygiene]]) at the transition, then loads the chosen role's full values before proceeding.
+- The Ringmaster always performs a hygiene checkpoint (see `Documentation and Commit Hygiene.md`) at the transition, then loads the chosen role's full values before proceeding.
 
 ---
 

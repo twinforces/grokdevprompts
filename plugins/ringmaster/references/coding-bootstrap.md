@@ -46,7 +46,7 @@ When you decide to operate in (or re-enter) a role:
    - Reviewer → `Reviewer Core Values.md`
    - Tester → `Tester Core Values.md`
 
-   These notes (in the same Obsidian vault as this prompt) are the authoritative source of truth. They contain the mental models, values, postures, and handoff guidance. After reading, confirm internalization out loud (e.g., "Loaded Implementer Core Values — 3am mental model, DRY, explain WHY, no fear of refactor...").
+   These notes (vendored next to this prompt in `references/`) are the authoritative source of truth. They contain the mental models, values, postures, and handoff guidance. After reading, confirm internalization out loud (e.g., "Loaded Implementer Core Values — 3am mental model, DRY, explain WHY, no fear of refactor...").
 
    **There are no condensed or inlined role values in this prompt.** You always read the full note.
 
@@ -86,7 +86,7 @@ Each poll of a still-running background command or subagent is a full parent tur
 - Never snapshot-poll a running task. One long wait. Finished tasks return immediately.
 - Monitors: terminal lines only. Overnight `/loop`: 1h.
 
-## Supporting Notes (Same Obsidian Vault)
+## Supporting Notes (this pack)
 - `Role Definitions for Routing.md` — Lightweight "when to embody" guide for routing decisions only.
 - `Architect / Implementer / Reviewer / Tester Core Values.md` — The detailed, refined mental models and values. Always load the full file on activation.
 - `Documentation and Commit Hygiene.md` — Your complete playbook for RECENTGOALS, CHANGELOG, docs/ pairing, commits, and nagging (serious work only).
