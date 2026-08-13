@@ -5,7 +5,7 @@ Living scratchpad. Older items migrate to `CHANGELOG.md`.
 ## Current
 
 ### Wait-credit-guard for long-running Grok tasks
-- **What:** Estimate the first background wait, then geometric backoff (2x, cap 10 minutes) so snapshot-polling cannot re-send a fat parent context every few seconds. Trusted hook denies short/missing `timeout_ms` while the task is still running.
-- **Why:** Each `get_command_or_subagent_output` that returns "still running" is a full parent turn. Tight 30s polls drain credits once the session is large.
-- **How:** `plugins/ringmaster/hooks/` + `references/wait-credit-guard.md`, wired into master prompt / coding-bootstrap. Plugin bumped to 0.2.0. Installed copy updated with `grok plugin update ringmaster`.
-- **Hash:** `282fa98`
+- **What:** Human-scale waits: instant (estimate) → coffee (15m) → lunch/overnight (1h). Hook denies short/missing `timeout_ms` while the task is still running. If you know it is hours, start at 1h.
+- **Why:** Each still-running poll is a full parent turn. A 10-minute cap still wakes a fat session all night. Overnight, hourly is enough.
+- **How:** Elapsed wall time since start picks the rung (not 2x forever). Playbook + master prompt / coding-bootstrap. Plugin 0.2.1.
+- **Hash:** pending (0.2.0 shipped as `282fa98`)

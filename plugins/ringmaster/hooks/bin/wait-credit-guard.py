@@ -6,7 +6,8 @@ returns "still running" becomes another model turn. As the parent context
 grows, those turns get expensive. This hook:
 
 1. Records a duration estimate when a background command or subagent starts.
-2. Enforces geometric backoff on subsequent polls (estimate, 2x, 4x, ... cap).
+2. Steps waits through human-scale phases: instant (estimate), coffee (15m),
+   lunch/overnight (1h). Hourly is enough for a job that runs all night.
 3. Denies snapshot / short polls during the backoff window. Finished tasks
    return immediately when retried with timeout_ms set to the required wait.
 
@@ -24,10 +25,13 @@ import tempfile
 import time
 from typing import Any
 
-FACTOR = 2
-CAP_MS = 10 * 60 * 1000
 DEFAULT_ESTIMATE_MS = 60 * 1000
 DEFAULT_SUBAGENT_MS = 3 * 60 * 1000
+INSTANT_UNTIL_MS = 2 * 60 * 1000
+COFFEE_MS = 15 * 60 * 1000
+COFFEE_UNTIL_MS = 20 * 60 * 1000
+LUNCH_MS = 60 * 60 * 1000
+CAP_MS = LUNCH_MS
 STALE_MS = 24 * 60 * 60 * 1000
 
 # Order matters: first match wins.
@@ -293,12 +297,36 @@ def deny(reason: str) -> dict[str, str]:
     return {"decision": "deny", "reason": reason}
 
 
-def next_interval(record: dict[str, Any]) -> int:
-    current = as_int(record.get("interval_ms")) or as_int(record.get("estimate_ms")) or DEFAULT_ESTIMATE_MS
+def next_interval(record: dict[str, Any], now: int | None = None) -> int:
+    """Human-scale waits: instant (estimate) → coffee (15m) → lunch/overnight (1h).
+
+    Phase is driven by elapsed wall time since the task started, not by doubling
+    forever. A job that has already been running for hours skips straight to
+    hourly checks. Cap is one hour: overnight work does not need a tighter loop.
+    """
+    now = now_ms() if now is None else now
+    started = as_int(record.get("started_ms"))
+    if started is None:
+        started = now
+    elapsed = max(0, now - started)
+    estimate = as_int(record.get("estimate_ms")) or DEFAULT_ESTIMATE_MS
     polls = as_int(record.get("polls")) or 0
-    if polls <= 1:
-        return min(current, CAP_MS)
-    return min(max(current, 1000) * FACTOR, CAP_MS)
+
+    if estimate >= LUNCH_MS:
+        return LUNCH_MS
+    if elapsed >= COFFEE_UNTIL_MS:
+        return LUNCH_MS
+    if polls > 1 or elapsed >= INSTANT_UNTIL_MS:
+        return COFFEE_MS
+    return max(min(estimate, COFFEE_MS), 1000)
+
+
+def phase_label(interval_ms: int) -> str:
+    if interval_ms >= LUNCH_MS:
+        return "lunch/overnight"
+    if interval_ms >= COFFEE_MS:
+        return "coffee"
+    return "instant"
 
 
 def pre_wait(state: dict[str, Any], tool_input: dict[str, Any]) -> dict[str, str]:
@@ -331,15 +359,15 @@ def pre_wait(state: dict[str, Any], tool_input: dict[str, Any]) -> dict[str, str
     polls = as_int(rec.get("polls")) or 0
     interval = as_int(rec.get("interval_ms")) or DEFAULT_ESTIMATE_MS
     return deny(
-        "Credit guard: task {tid} still running (poll #{polls}, interval {interval}ms). "
+        "Credit guard: task {tid} still running (poll #{polls}, {phase}, interval {interval}ms). "
         "Snapshot/short polls re-send the whole parent context and burn credits. "
-        "Retry with timeout_ms={required} (geometric backoff, cap {cap}ms). "
+        "Retry with timeout_ms={required} (instant=estimate, coffee=15m, lunch/overnight=1h). "
         "A finished task returns immediately.".format(
             tid=blocking_id,
             polls=polls,
+            phase=phase_label(interval),
             interval=interval,
             required=required,
-            cap=CAP_MS,
         )
     )
 
@@ -350,9 +378,10 @@ def touch_running(record: dict[str, Any], estimate_ms: int | None = None) -> Non
         record["estimate_ms"] = estimate_ms
     record.setdefault("estimate_ms", DEFAULT_ESTIMATE_MS)
     record.setdefault("interval_ms", record["estimate_ms"])
+    record.setdefault("started_ms", now)
     record.setdefault("polls", 0)
     record["polls"] = int(record.get("polls") or 0) + 1
-    record["interval_ms"] = next_interval(record)
+    record["interval_ms"] = next_interval(record, now=now)
     record["next_allowed_ms"] = now + int(record["interval_ms"])
     record["last_status"] = "running"
     record["updated_ms"] = now
@@ -373,6 +402,7 @@ def post_start(state: dict[str, Any], tool_name: str, tool_input: dict[str, Any]
         rec["estimate_ms"] = estimate
         rec["interval_ms"] = estimate
         rec["polls"] = 0
+        rec["started_ms"] = now
         rec["next_allowed_ms"] = now  # first collect is free
         rec["last_status"] = "running"
         rec["updated_ms"] = now
@@ -455,6 +485,17 @@ def selftest() -> int:
     check("pytest estimate", estimate_from_command("pytest -q") == 2 * 60 * 1000)
     check("default estimate", estimate_from_command("echo hi") == DEFAULT_ESTIMATE_MS)
     check("subagent estimate", estimate_for_start("spawn_subagent", {"prompt": "review"}) == DEFAULT_SUBAGENT_MS)
+
+    instant = next_interval({"estimate_ms": 90_000, "started_ms": 0, "polls": 1}, now=1_000)
+    coffee = next_interval({"estimate_ms": 90_000, "started_ms": 0, "polls": 2}, now=90_000)
+    lunch = next_interval({"estimate_ms": 90_000, "started_ms": 0, "polls": 3}, now=25 * 60 * 1000)
+    overnight = next_interval({"estimate_ms": 90_000, "started_ms": 0, "polls": 8}, now=8 * 60 * 60 * 1000)
+    known_long = next_interval({"estimate_ms": LUNCH_MS, "started_ms": 0, "polls": 1}, now=0)
+    check("phase instant", instant == 90_000, str(instant))
+    check("phase coffee", coffee == COFFEE_MS, str(coffee))
+    check("phase lunch", lunch == LUNCH_MS, str(lunch))
+    check("phase overnight hourly", overnight == LUNCH_MS, str(overnight))
+    check("known long starts at lunch", known_long == LUNCH_MS, str(known_long))
 
     fd, path = tempfile.mkstemp(prefix="wait-credit-guard-", suffix=".json")
     os.close(fd)
@@ -581,7 +622,7 @@ def selftest() -> int:
         )
         check("killed task allowed", after_kill == allow(), str(after_kill))
 
-        # Geometric growth of stored interval across successive running polls.
+        # Human-scale phases across successive running polls (clock stays ~now).
         handle_event(
             {
                 "hookEventName": "post_tool_use",
@@ -591,7 +632,7 @@ def selftest() -> int:
             }
         )
         intervals = []
-        for _ in range(5):
+        for _ in range(3):
             handle_event(
                 {
                     "hookEventName": "post_tool_use",
@@ -602,11 +643,26 @@ def selftest() -> int:
             )
             with open(path, encoding="utf-8") as fh:
                 intervals.append(json.load(fh)["tasks"]["geom"]["interval_ms"])
-        check("geom start", intervals[0] == 90_000, str(intervals))
-        check("geom second", intervals[1] == 180_000, str(intervals))
-        check("geom third", intervals[2] == 360_000, str(intervals))
-        check("geom fourth", intervals[3] == 720_000 if False else intervals[3] == CAP_MS, str(intervals))
-        check("geom cap", intervals[4] == CAP_MS, str(intervals))
+        check("phase start instant", intervals[0] == 90_000, str(intervals))
+        check("phase then coffee", intervals[1] == COFFEE_MS, str(intervals))
+        check("phase still coffee while young", intervals[2] == COFFEE_MS, str(intervals))
+
+        with open(path, encoding="utf-8") as fh:
+            state = json.load(fh)
+        state["tasks"]["geom"]["started_ms"] = now_ms() - (25 * 60 * 1000)
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(state, fh)
+        handle_event(
+            {
+                "hookEventName": "post_tool_use",
+                "toolName": "get_command_or_subagent_output",
+                "toolInput": {"task_id": "geom"},
+                "toolResult": {"status": "running"},
+            }
+        )
+        with open(path, encoding="utf-8") as fh:
+            aged = json.load(fh)["tasks"]["geom"]["interval_ms"]
+        check("phase lunch after 20m elapsed", aged == LUNCH_MS, str(aged))
     finally:
         for suffix in ("", ".tmp", ".lock"):
             try:

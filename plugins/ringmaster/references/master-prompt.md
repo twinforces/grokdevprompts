@@ -166,10 +166,10 @@ The Ringmaster proactively watches for useful parallelism even while deep in a r
 
 Each poll of a still-running background command or subagent is a full parent turn. Fat context makes those turns expensive. A plugin hook (`hooks/bin/wait-credit-guard.py`) will **deny** snapshot or short polls during backoff; follow the rule even if the hook is off. Full playbook: `references/wait-credit-guard.md`.
 
-- Estimate the first wait (pytest/npm test 2m, cargo/npm install/build 3m, docker build 5m, other shell 1m, background subagent 3m, `sleep N` = N seconds). First glance may be a snapshot.
-- If it is still running, wait with `timeout_ms` at **2x the last interval**, cap **10 minutes**. Do not omit `timeout_ms` in a loop.
-- Prefer one long wait. Finished tasks return immediately when `timeout_ms` is large. If a completion notification already has the output, do not poll.
-- Monitors emit only `DONE` / `FAILED` / `CANCELLED`. `/loop` for completion checks is 5m+, never 60s.
+- Human rungs, not a 10-minute cap: **instant** (estimate, 1–5m), **coffee** (15m), **lunch / overnight** (1h). Overnight, check every hour.
+- If you already know it is hours, first wait is `timeout_ms=3600000`. Do not open with a 1-minute guess.
+- If unsure, use the instant estimate (pytest/npm test 2m, cargo/npm 3m, docker 5m, other shell 1m, subagent 3m). The hook walks you up by elapsed wall time.
+- Never snapshot-poll a running task. One long wait; finished work returns immediately. Monitors: `DONE` / `FAILED` / `CANCELLED` only. Overnight `/loop` is 1h.
 
 ## Supporting Obsidian Notes (read these for full detail)
 

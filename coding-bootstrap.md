@@ -81,10 +81,10 @@ You decide when to spawn, provide context + the role-activation instruction abov
 
 Each poll of a still-running background command or subagent is a full parent turn. Fat context makes those turns expensive. A plugin hook will deny snapshot or short polls during backoff. Playbook: `wait-credit-guard.md`.
 
-- Estimate the first wait (pytest/npm test 2m, cargo/npm install/build 3m, docker build 5m, other shell 1m, background subagent 3m, `sleep N` = N seconds).
-- If still running, next `timeout_ms` is **2x the last interval**, cap **10 minutes**. Never snapshot-poll a running task.
-- Prefer one long wait. Finished tasks return immediately. Skip the poll if a completion notification already has the output.
-- Monitors: terminal lines only. `/loop` completion checks: 5m+.
+- Human rungs: **instant** (estimate 1–5m), **coffee** (15m), **lunch / overnight** (1h). No 10-minute cap. Overnight checks are hourly.
+- If you know it is hours, first `timeout_ms=3600000`. Unsure: instant estimate, then the hook steps up by elapsed time.
+- Never snapshot-poll a running task. One long wait. Finished tasks return immediately.
+- Monitors: terminal lines only. Overnight `/loop`: 1h.
 
 ## Supporting Notes (Same Obsidian Vault)
 - `Role Definitions for Routing.md` — Lightweight "when to embody" guide for routing decisions only.

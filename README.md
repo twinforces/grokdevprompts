@@ -57,7 +57,7 @@ Reload plugins in the TUI (`/plugins` → `r`) or start a new session.
 | `/activate-role architect` (etc.) | Hygiene → full Core Values read → operate as role |
 | `/bootstrap` | Thin command alias for bootstrap |
 
-Background waits: a trusted **wait-credit-guard** hook estimates duration, then applies geometric backoff (2x, cap 10 minutes) so snapshot-polling a long job cannot re-send a fat context every few seconds. Reload plugins (`/plugins` → `r`) after updating.
+Background waits: a trusted **wait-credit-guard** hook uses human-scale rungs (instant / coffee 15m / lunch-overnight 1h) so snapshot-polling a long job cannot re-send a fat context every few minutes. Overnight, hourly is enough. Reload plugins (`/plugins` → `r`) after updating.
 
 Validate:
 
@@ -88,7 +88,7 @@ grokdevprompts/
   .grok-plugin/marketplace.json     # marketplace index
   plugins/ringmaster/
     plugin.json
-    hooks/                          # wait-credit-guard: estimate + geometric backoff
+    hooks/                          # wait-credit-guard: instant / coffee / lunch-overnight
     skills/                         # bootstrap-prompt, hygiene, activate-role
     commands/bootstrap.md
     references/                     # kebab-case playbooks used by skills

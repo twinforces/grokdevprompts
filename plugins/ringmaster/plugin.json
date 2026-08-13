@@ -1,7 +1,7 @@
 {
   "name": "ringmaster",
-  "version": "0.2.0",
-  "description": "Ringmaster pack for Grok Build: bootstrap, hygiene, four-role activation, and wait-credit-guard backoff for long-running background tasks.",
+  "version": "0.2.1",
+  "description": "Ringmaster pack for Grok Build: bootstrap, hygiene, four-role activation, and wait-credit-guard (instant / coffee / lunch-overnight) for long-running tasks.",
   "author": {
     "name": "Pierce"
   },

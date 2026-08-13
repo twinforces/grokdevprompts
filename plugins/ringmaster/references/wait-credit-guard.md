@@ -1,18 +1,27 @@
 # Wait Credit Guard
 
-**Why:** Every `get_command_or_subagent_output` / `wait_commands_or_subagents` call that comes back "still running" is another parent-agent turn. That turn re-sends the whole conversation. On a long job, tight 30s polls (the tool default) will drain credits once the session is fat. The notification on completion is free enough; the poll loop is not.
+**Why:** Every `get_command_or_subagent_output` / `wait_commands_or_subagents` call that comes back "still running" is another parent-agent turn. That turn re-sends the whole conversation. Tight 30s (or 10m) polls on a job that runs for hours will drain credits once the session is fat. Human attention does not work on a 10-minute metronome. It works as **instant / cup of coffee / lunch / overnight**. Overnight, checking every hour is enough.
 
 Enforcement lives in `hooks/bin/wait-credit-guard.py` (trusted plugin hook). This note is the playbook the Ringmaster follows even if the hook is off.
 
 ## Rule
 
-1. **Estimate first.** When you background a command or subagent, pick a duration from the table below (or `sleep N` when the command literally sleeps). First collect may be a snapshot.
-2. **Then geometric backoff.** If it is still running, the next wait is `timeout_ms = last_interval * 2`, capped at **10 minutes** (`600000`). Sequence from a 60s default: 60s, 120s, 240s, 480s, 600s, 600s...
-3. **Never snapshot-poll a running task.** Omit `timeout_ms` only for the first glance or after a completion/kill. If a completion notification already has the output, do not poll at all.
-4. **Prefer one long wait over N short ones.** If you have no other work, call once with `timeout_ms` set to the estimate (or the remaining backoff). A finished task returns immediately even when `timeout_ms` is large.
-5. **Do other work inside the wait only if it is real work.** Do not busy-loop "check again" turns. Monitors must emit only terminal lines (`DONE` / `FAILED` / `CANCELLED`), never progress. `/loop` for completion checks should be 5m+ , not 60s.
+Pick the human rung you actually believe, then let elapsed time walk you up. Do not climb a 2x ladder that caps at 10 minutes.
 
-## Duration estimates (first wait)
+| Rung | When | `timeout_ms` |
+|---|---|---|
+| **Instant** | First glance, or you think it is seconds to a few minutes | Command estimate (table below), often 1–5 min |
+| **Coffee** | Still running after the instant wait, or you would go get coffee | 900000 (15 min) |
+| **Lunch / overnight** | Still running after ~20 min on the clock, or you already know it is hours | 3600000 (1 hour) |
+
+1. **If you know it is hours or overnight, start at lunch.** First wait is `timeout_ms=3600000`. Do not open with a 1-minute guess and "see."
+2. **If you are unsure, start at the estimate table** (instant). First collect may be a snapshot.
+3. **The hook steps you up by wall-clock elapsed**, not by doubling forever. After ~2 min you are on coffee (15m). After ~20 min you are on lunch/overnight (1h) and you stay there. A job that has already been running for hours skips straight to hourly.
+4. **Never snapshot-poll a running task.** Omit `timeout_ms` only for the first glance or after a completion/kill. If a completion notification already has the output, do not poll at all.
+5. **Prefer one long wait.** Finished tasks return immediately even when `timeout_ms` is 1 hour. You are not sitting out the full interval if the job already ended.
+6. **Monitors / `/loop`:** terminal lines only (`DONE` / `FAILED` / `CANCELLED`). Completion `/loop` is 1h for overnight work, never 60s.
+
+## Instant estimates (only when you do not already know it is long)
 
 | Kind | `timeout_ms` |
 |---|---|
@@ -23,20 +32,19 @@ Enforcement lives in `hooks/bin/wait-credit-guard.py` (trusted plugin hook). Thi
 | other shell | 60000 (1m) |
 | background subagent | 180000 (3m) |
 
-The hook uses this same table. If you know the job is longer (full CI, huge compile), start higher. Backoff still caps at 10 minutes per wait.
+These are the **instant** rung. They are not a cap. A `docker build` that is still going at 5 minutes becomes coffee, then hourly. A training run you already know is overnight never uses this table.
 
 ## What the hook does
 
-- **Start** (`run_terminal_command` / `spawn_subagent` with a task id): store the estimate. First collect is allowed immediately.
-- **Poll while running:** if now is still inside the backoff window and `timeout_ms` is missing or too small, **deny** and tell you the required `timeout_ms`. Retry with that value.
+- **Start** (`run_terminal_command` / `spawn_subagent` with a task id): store start time + estimate. First collect is allowed immediately.
+- **Poll while running:** if now is still inside the current rung's window and `timeout_ms` is missing or too small, **deny** and tell you the required `timeout_ms`. Retry with that value.
+- **Elapsed wins:** a task whose start is already 20+ minutes ago requires a 1 hour wait, even on the first denied short poll.
 - **Completed / failed / cancelled / killed:** drop state. Further collects are allowed.
 - Fail-open: a hook crash never blocks the tool.
-
-If a completion notification arrives during backoff and you still need the output, retry with the required `timeout_ms`. Finished work returns at once; you are not sitting on the full interval.
 
 ## Do not
 
 - `get_command_or_subagent_output` with no timeout in a loop.
-- Default 30s waits repeated "just to see".
-- `monitor` or `/loop` as a substitute for a single long wait on a one-shot job.
+- Default 30s waits, or a 10-minute cap, on something that might run until morning.
+- `monitor` or `/loop` as a substitute for one long wait on a one-shot job.
 - Sleep-loops in the shell to poll; use one `timeout_ms` wait instead.
