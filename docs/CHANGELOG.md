@@ -6,8 +6,8 @@ Long-term history. What / Why / How + git hash. Successes and failures.
 
 - **What:** Added a file-edit ruleset: re-read before write, surgical edits, no full-file write over ~2k lines, one retry on "file modified," run the check that exists, worktree for non-trivial changes, Plan mode before wide or sensitive edits. PreToolUse hook denies secret paths and very large overwrites. PostToolUse hook feeds `git diff --check` back. Session start and the first write ask whether to `git init` when the folder is not a repository. The hook does not run `git init`.
 - **Why:** A full-file write from a stale copy clobbers concurrent edits. Rules alone do not gate the tool.
-- **How:** Root note plus `references/file-edit-discipline.md`. Hooks `guard-write.py` and `post-edit-check.py` in `hooks/hooks.json` (fail-open, no re-read tracker). Wired into master prompt, coding-bootstrap, Implementer posture, bootstrap and activate-role skills, README, brochure. Plugin 0.2.2.
-- **Hash:** uncommitted
+- **How:** Root note plus `references/file-edit-discipline.md`. Hooks `guard-write.py`, `post-edit-check.py`, and `ensure-git-repo.py` in `hooks/hooks.json` (fail-open, no re-read tracker, no automatic `git init`). Wired into master prompt, coding-bootstrap, Implementer posture, bootstrap and activate-role skills, README, brochure. Plugin 0.2.2.
+- **Hash:** `6222fc0`
 
 ## 2026-08-13 — brochure is the whole pack; pack files only
 
