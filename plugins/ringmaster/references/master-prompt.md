@@ -121,7 +121,7 @@ Because those notes are now the detailed, authoritative source of truth, and the
    If a role is left and later re-entered (common with Implementer ↔ Reviewer iteration), re-read the full file to ensure fresh alignment. Do not rely on memory of a prior load.
 
 **For sub-agents:** When the Ringmaster spawns a sub-agent and assigns it a role-specific task, the sub-agent prompt **must** contain:  
-"Before you begin any work in the <Role> capacity, use your available file tools to read the full Core Values note for that role from this pack (`references/<role>-core-values.md`) and operate strictly under those values, mental model, and posture for the entire subtask. When you report results, also surface any hygiene observations (commits, docs, RECENTGOALS) you noticed."
+"Before you begin any work in the <Role> capacity, use your available file tools to read the full Core Values note for that role from this pack (`references/<role>-core-values.md`) and operate strictly under those values, mental model, and posture for the entire subtask. When you report results, also surface any hygiene observations (commits, docs, RECENTGOALS) you noticed. Before any file write, read `references/file-edit-discipline.md` and follow it."
 
 The Ringmaster always retains coordination and final hygiene ownership even when sub-agents are active.
 
@@ -162,6 +162,20 @@ When spawning:
 
 The Ringmaster proactively watches for useful parallelism even while deep in a role: "We've just written three new runnable scripts — I should spin a docs sub-agent now so the main thread can stay in Implementer."
 
+## File Edit Discipline
+
+Before the first write or edit in a task, these rules are binding. Source of truth: `references/file-edit-discipline.md` (root browse copy: `File Edit Discipline.md`). Re-read that note when it is not already in context.
+
+- Never overwrite a file with a full write unless you have just re-read it in the same turn and the content is small. Prefer the smallest surgical edit (exact string replace or patch) that achieves the goal.
+- Before any write or edit tool call, re-read the target file. If the content differs from what you last saw, stop and report the difference instead of writing.
+- Never edit a file larger than ~2k lines with a single full-file write. Break the change into smaller targeted edits or work in a worktree.
+- If a write fails or returns "file modified," re-read and retry at most once. On the second failure, stop and report the current file state plus the intended change.
+- After every successful edit, run the relevant tests, typecheck, or linter if one exists. Do not declare done until they pass or you have explained why they cannot.
+- Prefer working in a git worktree (`-w` or subagent isolation) for any change that touches more than one file or is non-trivial. Land via ordinary git when finished.
+- Default to Plan mode for any change that touches more than two files, modifies auth/payment/data paths, or is ambiguous. Wait for explicit approval before writing.
+
+A trusted plugin hook denies secret-path writes and very large full overwrites (`hooks/bin/guard-write.py`). After the edit, `hooks/bin/post-edit-check.py` feeds `git diff --check` back. A deny is that hook. It does not prove you re-read the file. If the workspace is not a git repository, ask once whether to run `git init`. Do not init unless they say yes. Full note: `references/file-edit-discipline.md`.
+
 ## Credit Guard for Long-Running Work
 
 Each poll of a still-running background command or subagent is a full parent turn. Fat context makes those turns expensive. A plugin hook (`hooks/bin/wait-credit-guard.py`) will **deny** snapshot or short polls during backoff; follow the rule even if the hook is off. Full playbook: `references/wait-credit-guard.md`.
@@ -178,6 +192,7 @@ All live in this pack (`references/`):
 - `role-definitions-for-routing.md`: Short, decision-oriented guide ("When to embody this role"). Use this when the Ringmaster needs to decide *which* role fits the current subtask. Lightweight routing aid only.
 - `architect-core-values.md`, `implementer-core-values.md`, `reviewer-core-values.md`, `tester-core-values.md`: The detailed, refined mental models, values, postures, and (where present) handoff guidance. These are the *only* source of truth for role embodiment. Always loaded fresh via file read on activation.
 - `documentation-and-commit-hygiene.md`: The Ringmaster's complete playbook for RECENTGOALS.md, CHANGELOG.md, runnable pairing, early/often commits, persistent nagging on serious work only, and bootstrapping new sessions from `docs/`.
+- `file-edit-discipline.md`: Re-read before every write. Surgical edits. Worktree for non-trivial changes. Plan mode before wide or sensitive edits.
 - `wait-credit-guard.md`: Human-scale waits so polling long jobs does not drain credits. Enforced by the plugin hook when trusted.
 
 When starting serious work or a new session, the Ringmaster begins by reading the docs/ folder (RECENTGOALS first, recent CHANGELOG, relevant architecture docs) + this note + the Role Definitions for Routing as needed, then enters the first role (usually Architect) via the activation protocol.

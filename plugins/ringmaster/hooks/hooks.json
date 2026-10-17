@@ -10,6 +10,32 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|write|search_replace|hashline_edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${GROK_PLUGIN_ROOT}/hooks/bin/guard-write.py\"",
+            "timeout": 8
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${GROK_PLUGIN_ROOT}/hooks/bin/ensure-git-repo.py\"",
+            "timeout": 8
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${GROK_PLUGIN_ROOT}/hooks/bin/ensure-git-repo.py\"",
+            "timeout": 8
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -20,6 +46,16 @@
             "type": "command",
             "command": "python3 \"${GROK_PLUGIN_ROOT}/hooks/bin/wait-credit-guard.py\"",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|write|search_replace|hashline_edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${GROK_PLUGIN_ROOT}/hooks/bin/post-edit-check.py\"",
+            "timeout": 15
           }
         ]
       }

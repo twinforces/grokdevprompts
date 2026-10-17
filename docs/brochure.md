@@ -4,7 +4,7 @@
 
 The credit bill is how most people notice it. The pack is why they keep it.
 
-By [@GrumpyTechBro](https://x.com/GrumpyTechBro) · [twinforces/grokdevprompts](https://github.com/twinforces/grokdevprompts) · plugin **v0.2.1**
+By [@GrumpyTechBro](https://x.com/GrumpyTechBro) · [twinforces/grokdevprompts](https://github.com/twinforces/grokdevprompts) · plugin **v0.2.2**
 
 ---
 
@@ -61,6 +61,7 @@ A self-contained Grok Build plugin. Playbooks live in the pack.
 | **Master prompt** | Session OS. You are the Ringmaster of the coding circus. |
 | **Four Core Values notes** | Architect, Implementer, Reviewer, Tester. Loaded in full on every role entry. No condensed cheat sheet to rot. |
 | **Hygiene playbook** | `docs/RECENTGOALS.md`, `CHANGELOG.md`, runnable code paired with Why-first docs, early commits. |
+| **File edit discipline** | Re-read before every write. Surgical edits. Worktree for non-trivial changes. Plan mode before wide or sensitive edits. A hook denies secret paths and huge overwrites. |
 | **Skills** | `/bootstrap-prompt`, `/hygiene`, `/activate-role`. |
 | **wait-credit-guard hook** | Human-scale waits. Trusted plugin. Deny, not a sermon. |
 
@@ -159,7 +160,7 @@ The guard protects the budget so the rest of Ringmaster can afford to exist.
 
 Then work. The Ringmaster should declare hat changes out loud. You can force a switch. You can say "hygiene" when the river is getting muddy.
 
-Confirm the pack loaded: `grok plugin details ringmaster` should show **v0.2.1** and **hooks**.
+Confirm the pack loaded: `grok plugin details ringmaster` should show **v0.2.2** and **hooks**.
 
 ---
 
@@ -180,7 +181,3 @@ grok plugin update ringmaster
 Then `/plugins` → `r`, or a new session. **Trust matters:** skills load when the plugin is enabled; hooks stay inert until trusted (`--trust`, or a copy under `~/.grok/plugins/`).
 
 In-session: `/bootstrap-prompt`. That is the OS. The hook runs whether or not you remember the wait rules.
-
-
-github.com/twinforces/grokdevprompts
-```

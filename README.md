@@ -50,12 +50,14 @@ Reload plugins in the TUI (`/plugins` → `r`) or start a new session.
 
 | Invoke | What it does |
 |---|---|
-| `/bootstrap-prompt` or “bootstrap” | Load master prompt as session OS |
+| `/bootstrap-prompt` or “bootstrap” | Load master prompt and File Edit Discipline as session OS |
 | `/hygiene` | Docs + commit hygiene checkpoint |
 | `/activate-role architect` (etc.) | Hygiene → full Core Values read → operate as role |
 | `/bootstrap` | Thin command alias for bootstrap |
 
 Background waits: a trusted **wait-credit-guard** hook uses human-scale rungs (instant / coffee 15m / lunch-overnight 1h) so snapshot-polling a long job cannot re-send a fat context every few minutes. Overnight, hourly is enough. Reload plugins (`/plugins` → `r`) after updating.
+
+File writes: a trusted **guard-write** hook denies secret paths and very large full overwrites. **post-edit-check** feeds `git diff --check` back after the edit. **ensure-git-repo** asks once whether to `git init` when the workspace is not a repository, and does not init unless you say yes. Same `hooks/hooks.json`. The rules note is `File Edit Discipline.md`.
 
 Validate:
 
@@ -93,6 +95,7 @@ grokdevprompts/
 | `Tester Core Values.md` | `references/tester-core-values.md` |
 | `Role Definitions for Routing.md` | `references/role-definitions-for-routing.md` |
 | `Wait Credit Guard.md` | `references/wait-credit-guard.md` |
+| `File Edit Discipline.md` | `references/file-edit-discipline.md` |
 
 ## Share / remote
 

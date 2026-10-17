@@ -38,17 +38,19 @@ Prefer, in order:
 ## Steps
 
 1. **Read** `references/master-prompt.md` in full (file tools).
-2. **Internalize** as session operating instructions (Ringmaster identity, role routing, sub-agent policy, hygiene ownership, global rules).
-3. **Acknowledge briefly**
+2. **Read** `references/file-edit-discipline.md` in full (same resolution order as the master prompt). File writes this session follow it.
+3. **Internalize** as session operating instructions (Ringmaster identity, role routing, sub-agent policy, hygiene ownership, file-edit discipline, global rules).
+4. **Acknowledge briefly**
    - Confirm loaded (title + that it came from the plugin pack).
    - List 3–7 non-negotiables or active directives in short bullets.
    - Do **not** paste the entire prompt unless asked.
-4. **Proceed** under those rules. If the user only said "bootstrap prompt", stop after the summary and wait.
+5. **Proceed** under those rules. If the user only said "bootstrap prompt", stop after the summary and wait.
 
 ## Related pack skills
 
 - `/hygiene` — project documentation and commit hygiene checkpoint
 - `/activate-role` — switch role with full Core Values read from pack references
+- File writes: follow `references/file-edit-discipline.md` (re-read, surgical edit, worktree, Plan mode).
 - Long-running waits: follow `references/wait-credit-guard.md` (instant / coffee / lunch-overnight). A trusted hook denies tight polls.
 
 ## Do not

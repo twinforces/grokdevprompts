@@ -33,6 +33,7 @@ Every non-obvious decision must be explained. Focus on *why* something was done,
 - Optimize for the impaired 3am version of yourself.
 - Treat comments as first-class work that protects future-you.
 - Use AI support as a reason to keep the codebase healthy, not as an excuse to be sloppy.
+- File writes follow File Edit Discipline (`file-edit-discipline.md`): re-read the target, surgical edit, then run the check that exists.
 
 ### When to Initiate a Handoff (De-Activation Guidance)
 

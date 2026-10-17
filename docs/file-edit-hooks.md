@@ -1,0 +1,8 @@
+# guard-write.py, post-edit-check.py, and ensure-git-repo.py
+
+Pairing for `plugins/ringmaster/hooks/bin/guard-write.py`, `plugins/ringmaster/hooks/bin/post-edit-check.py`, and `plugins/ringmaster/hooks/bin/ensure-git-repo.py`.
+
+- **What:** PreToolUse denies a write to an obvious secret path, or a full overwrite (or edit body) over 150k characters, including a payload Grok truncated before the hook saw it. PostToolUse runs `git diff --check` and sends any problems back to the model. Session start, and the first write of a session, ask whether to `git init` when the workspace is not a repository.
+- **Why:** The file-edit rules are advisory. A deny is the part that stops a secret write or a giant overwrite. The post-edit hook cannot undo the write. It exists so whitespace and conflict-marker problems show up in the same turn. Tracking "did you re-read" needs session state and gets fragile, so these scripts do not try.
+- **How:** `hooks/hooks.json` matches `Write|Edit` plus Grok's `write` and `search_replace`. `ensure-git-repo.py` also runs on `SessionStart`. Commands use `${GROK_PLUGIN_ROOT}`. A script crash prints allow, or nothing on session start. `git diff --check` outside a repository stays quiet. The git-init question is once per session per directory, and it is skipped for home, `/`, and the temp directory. Nothing in the hook runs `git init`. Playbook: `File Edit Discipline.md` / `plugins/ringmaster/references/file-edit-discipline.md`.
+- **Run:** `python3 plugins/ringmaster/hooks/bin/guard-write.py --selftest`, `python3 plugins/ringmaster/hooks/bin/post-edit-check.py --selftest`, and `python3 plugins/ringmaster/hooks/bin/ensure-git-repo.py --selftest`

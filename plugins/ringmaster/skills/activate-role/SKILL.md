@@ -17,7 +17,7 @@ Switch the main agent into a coding role using the **full file-read** protocol. 
 | Reviewer | `reviewer-core-values.md` |
 | Tester | `tester-core-values.md` |
 
-Also useful: `role-definitions-for-routing.md`, `master-prompt.md`.
+Also useful: `role-definitions-for-routing.md`, `master-prompt.md`, `file-edit-discipline.md`.
 
 Resolve plugin root via `${GROK_PLUGIN_ROOT}` or `../../references/` from this skill directory.
 
@@ -35,6 +35,7 @@ Resolve plugin root via `${GROK_PLUGIN_ROOT}` or `../../references/` from this s
 
 4. **Operate**  
    All subsequent work in this turn/phase stays under those values until the next explicit switch.
+   If this phase writes files, read `references/file-edit-discipline.md` when it is not already loaded this session, and follow it on every write.
 
 ## Args
 
