@@ -50,7 +50,8 @@ Reload plugins in the TUI (`/plugins` → `r`) or start a new session.
 
 | Invoke | What it does |
 |---|---|
-| `/bootstrap-prompt` or “bootstrap” | Load master prompt and File Edit Discipline as session OS |
+| `/ringmaster` | Load the pack (master prompt and File Edit Discipline) |
+| `/bootstrap-prompt` or “bootstrap” | Same load, slash alias |
 | `/hygiene` | Docs + commit hygiene checkpoint |
 | `/activate-role architect` (etc.) | Hygiene → full Core Values read → operate as role |
 | `/bootstrap` | Thin command alias for bootstrap |
@@ -96,6 +97,17 @@ grokdevprompts/
 | `Role Definitions for Routing.md` | `references/role-definitions-for-routing.md` |
 | `Wait Credit Guard.md` | `references/wait-credit-guard.md` |
 | `File Edit Discipline.md` | `references/file-edit-discipline.md` |
+
+## Agensi listing
+
+Agensi lists a `SKILL.md`, not a Grok plugin. The listing skill is `plugins/ringmaster/skills/ringmaster/SKILL.md`. It reads `references/` beside itself, which is how the zip is packed. Hooks stay in the Grok plugin. They are not in the marketplace zip.
+
+```bash
+sh plugins/ringmaster/scripts/pack-agensi.sh
+# writes dist/ringmaster-agensi.zip
+```
+
+Upload that zip from the Agensi creator dashboard. The archive root is `SKILL.md` plus `references/`.
 
 ## Share / remote
 

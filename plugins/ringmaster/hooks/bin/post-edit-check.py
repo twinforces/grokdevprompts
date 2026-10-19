@@ -14,17 +14,15 @@ import sys
 from typing import Any
 
 
-def allow() -> dict[str, str]:
-    return {"decision": "allow"}
-
-
-def interpret(returncode: int, stdout: str, stderr: str) -> dict[str, Any]:
+def interpret(returncode: int, stdout: str, stderr: str) -> dict[str, Any] | None:
+    # PostToolUse honors only decision "block". Any other decision, including
+    # "allow", is recorded as a failed hook. A clean check stays silent.
     # 128+ is git's fatal range (no repo, bad invocation). Do not nag on that.
     if returncode == 0 or returncode >= 128:
-        return allow()
+        return None
     text = (stdout or "").strip()
     if not text:
-        return allow()
+        return None
     return {
         "decision": "block",
         "reason": "git diff --check reported issues",
@@ -43,7 +41,7 @@ def work_dir(event: dict[str, Any]) -> str | None:
     return None
 
 
-def run_check(cwd: str | None) -> dict[str, Any]:
+def run_check(cwd: str | None) -> dict[str, Any] | None:
     try:
         completed = subprocess.run(
             ["git", "diff", "--check"],
@@ -53,22 +51,23 @@ def run_check(cwd: str | None) -> dict[str, Any]:
             cwd=cwd,
         )
     except Exception:
-        return allow()
+        return None
     return interpret(completed.returncode, completed.stdout or "", completed.stderr or "")
 
 
 def selftest() -> int:
     failures: list[str] = []
 
-    def check(label: str, got: dict[str, Any], expect: str) -> None:
-        if got.get("decision") != expect:
+    def check(label: str, got: dict[str, Any] | None, expect: str | None) -> None:
+        decision = None if got is None else got.get("decision")
+        if decision != expect:
             failures.append(f"{label}: {got}")
 
-    check("clean", interpret(0, "", ""), "allow")
-    check("fatal", interpret(129, "", "fatal: not a git repository"), "allow")
+    check("clean", interpret(0, "", ""), None)
+    check("fatal", interpret(129, "", "fatal: not a git repository"), None)
     check("whitespace", interpret(2, "src/app.py:1: trailing whitespace.\n", ""), "block")
-    check("empty nonzero", interpret(2, "", ""), "allow")
-    note = interpret(2, "src/app.py:1: trailing whitespace.\n", "")
+    check("empty nonzero", interpret(2, "", ""), None)
+    note = interpret(2, "src/app.py:1: trailing whitespace.\n", "") or {}
     context = note.get("hookSpecificOutput", {}).get("additionalContext", "")
     if "trailing whitespace" not in context:
         failures.append(f"context missing: {note}")
@@ -86,14 +85,15 @@ def main(argv: list[str]) -> int:
     try:
         event = json.load(sys.stdin)
     except Exception:
-        print(json.dumps(allow()))
         return 0
     if not isinstance(event, dict):
         event = {}
     try:
-        print(json.dumps(run_check(work_dir(event))))
+        result = run_check(work_dir(event))
     except Exception:
-        print(json.dumps(allow()))
+        return 0
+    if result is not None:
+        print(json.dumps(result))
     return 0
 
 

@@ -2,6 +2,13 @@
 
 Long-term history. What / Why / How + git hash. Successes and failures.
 
+## 2026-10-19 — Post-edit hook no longer reports failure on a clean diff (plugin 0.2.3)
+
+- **What:** A clean `git diff --check` prints nothing. Problems still come back as `decision: block`. Added `skills/ringmaster/SKILL.md` and `scripts/pack-agensi.sh` so the pack can be listed on Agensi as one skill plus its references.
+- **Why:** Grok's `PostToolUse` honors only `block`. `{"decision":"allow"}` was recorded as `unrecognized decision value 'allow'` after every write.
+- **How:** `hooks/bin/post-edit-check.py`. `wait-credit-guard.py` no longer prints `allow` when a post-event payload is empty or the script throws. Plugin 0.2.3.
+- **Hash:** uncommitted
+
 ## 2026-10-17 — File Edit Discipline (plugin 0.2.2)
 
 - **What:** Added a file-edit ruleset: re-read before write, surgical edits, no full-file write over ~2k lines, one retry on "file modified," run the check that exists, worktree for non-trivial changes, Plan mode before wide or sensitive edits. PreToolUse hook denies secret paths and very large overwrites. PostToolUse hook feeds `git diff --check` back. Session start and the first write ask whether to `git init` when the folder is not a repository. The hook does not run `git init`.

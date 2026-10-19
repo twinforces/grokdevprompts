@@ -4,7 +4,7 @@
 
 The credit bill is how most people notice it. The pack is why they keep it.
 
-By [@GrumpyTechBro](https://x.com/GrumpyTechBro) · [twinforces/grokdevprompts](https://github.com/twinforces/grokdevprompts) · plugin **v0.2.2**
+By [@GrumpyTechBro](https://x.com/GrumpyTechBro) · [twinforces/grokdevprompts](https://github.com/twinforces/grokdevprompts) · plugin **v0.2.3**
 
 ---
 
@@ -160,7 +160,7 @@ The guard protects the budget so the rest of Ringmaster can afford to exist.
 
 Then work. The Ringmaster should declare hat changes out loud. You can force a switch. You can say "hygiene" when the river is getting muddy.
 
-Confirm the pack loaded: `grok plugin details ringmaster` should show **v0.2.2** and **hooks**.
+Confirm the pack loaded: `grok plugin details ringmaster` should show **v0.2.3** and **hooks**.
 
 ---
 

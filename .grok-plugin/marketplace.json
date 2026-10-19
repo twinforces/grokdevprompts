@@ -9,7 +9,7 @@
       "name": "ringmaster",
       "description": "Ringmaster orchestration: bootstrap, hygiene, four roles, file-edit discipline, and wait-credit-guard (instant / coffee / lunch-overnight) for long waits.",
       "category": "productivity",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "tags": ["ringmaster", "hygiene", "roles", "tui", "subagents"],
       "source": {
         "type": "local",

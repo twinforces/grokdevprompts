@@ -433,24 +433,34 @@ def post_kill(state: dict[str, Any], tool_input: dict[str, Any], tool_result: An
         tasks.pop(tid, None)
 
 
-def handle_event(event: dict[str, Any]) -> dict[str, str] | None:
-    event_name = str(
+def event_name_of(event: dict[str, Any]) -> str:
+    raw = (
         event.get("hookEventName")
+        or event.get("hook_event_name")
         or os.environ.get("GROK_HOOK_EVENT")
         or ""
-    ).lower()
+    )
+    return str(raw).lower().replace("_", "").replace("-", "")
+
+
+def is_post_event(event: dict[str, Any]) -> bool:
+    return "posttooluse" in event_name_of(event)
+
+
+def handle_event(event: dict[str, Any]) -> dict[str, str] | None:
+    event_name = event_name_of(event)
     tool_name = normalize_tool_name(str(event.get("toolName") or event.get("tool_name") or ""))
     tool_input = parse_jsonish(event.get("toolInput") or event.get("tool_input") or {})
     if not isinstance(tool_input, dict):
         tool_input = {}
     tool_result = event.get("toolResult", event.get("tool_result"))
 
-    if event_name in {"pre_tool_use", "pretooluse"}:
+    if event_name == "pretooluse" or event_name.startswith("pretooluse"):
         if is_wait_tool(tool_name):
             return with_state(lambda state: pre_wait(state, tool_input))
         return allow()
 
-    if event_name in {"post_tool_use", "posttooluse"}:
+    if "posttooluse" in event_name:
 
         def mutate(state: dict[str, Any]) -> None:
             if is_start_tool(tool_name):
@@ -461,6 +471,7 @@ def handle_event(event: dict[str, Any]) -> dict[str, str] | None:
                 post_kill(state, tool_input, tool_result)
 
         with_state(mutate)
+        # Silence. PostToolUse records decision "allow" as a failed hook.
         return None
 
     return allow() if event_name.startswith("pre") else None
@@ -684,22 +695,22 @@ def main(argv: list[str]) -> int:
     if argv and argv[0] in {"--selftest", "selftest"}:
         return selftest()
     raw = sys.stdin.read()
+    # No payload: stay silent. PreToolUse treats that as allow. Printing
+    # {"decision":"allow"} on PostToolUse is recorded as a failed hook.
     if not raw.strip():
-        emit(allow())
         return 0
     try:
         event = json.loads(raw)
     except json.JSONDecodeError:
-        emit(allow())
         return 0
     if not isinstance(event, dict):
-        emit(allow())
         return 0
     try:
         emit(handle_event(event))
     except Exception as exc:  # fail-open: never brick tool use
         sys.stderr.write(f"wait-credit-guard error: {exc}\n")
-        emit(allow())
+        if not is_post_event(event):
+            emit(allow())
     return 0
 
 

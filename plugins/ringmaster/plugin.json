@@ -1,6 +1,6 @@
 {
   "name": "ringmaster",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Ringmaster pack for Grok Build: bootstrap, hygiene, four-role activation, file-edit discipline, and wait-credit-guard (instant / coffee / lunch-overnight) for long-running tasks.",
   "author": {
     "name": "Pierce"
