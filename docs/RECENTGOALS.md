@@ -8,7 +8,7 @@ Living scratchpad. Older items migrate to `CHANGELOG.md`.
 - **What:** `post-edit-check.py` stays silent when `git diff --check` is clean. A Ringmaster `SKILL.md` plus `scripts/pack-agensi.sh` builds the zip Agensi lists.
 - **Why:** Grok records any `PostToolUse` decision other than `block` as a failed hook. `{"decision":"allow"}` after every write was the failure in the scrollback.
 - **How:** `hooks/bin/post-edit-check.py`. `wait-credit-guard.py` also stays silent on a post-event crash. Listing skill: `skills/ringmaster/SKILL.md`.
-- **Hash:** uncommitted
+- **Hash:** `4104653`
 
 ### File Edit Discipline (plugin 0.2.2)
 - **What:** Ruleset for writes: re-read first, surgical edit, one retry, then tests. Worktree for non-trivial or multi-file work. Plan mode above two files, or for auth/payment/data paths, or when the change is ambiguous. Plugin hooks deny secret paths and bodies over 150k, feed `git diff --check` back, and ask once before `git init` when the workspace is not a repository.

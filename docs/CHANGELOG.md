@@ -7,7 +7,7 @@ Long-term history. What / Why / How + git hash. Successes and failures.
 - **What:** A clean `git diff --check` prints nothing. Problems still come back as `decision: block`. Added `skills/ringmaster/SKILL.md` and `scripts/pack-agensi.sh` so the pack can be listed on Agensi as one skill plus its references.
 - **Why:** Grok's `PostToolUse` honors only `block`. `{"decision":"allow"}` was recorded as `unrecognized decision value 'allow'` after every write.
 - **How:** `hooks/bin/post-edit-check.py`. `wait-credit-guard.py` no longer prints `allow` when a post-event payload is empty or the script throws. Plugin 0.2.3.
-- **Hash:** uncommitted
+- **Hash:** `4104653`
 
 ## 2026-10-17 — File Edit Discipline (plugin 0.2.2)
 
